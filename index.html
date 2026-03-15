@@ -155,7 +155,15 @@ function enviarWhatsApp() {
         "\n\nReferencia: " + referencia.value +
         "\nMandato: " + mandato.value +
         "\nEnlace: " + enlace +
-        "\n\nEl agente contactará para fijar la cita.";
+        "\n\n--- Copiar para Google Calendar ---\n" +
+        "Cliente: " + nombre.value +
+        "\nTeléfono: " + telefono.value +
+        "\nEmail: " + email.value +
+        "\nDNI: " + dni.value +
+        extras +
+        "\n\nReferencia: " + referencia.value +
+        "\nMandato: " + mandato.value +
+        "\nEnlace: " + enlace;
 
     // WhatsApp al agente (solo a ti)
     window.open("https://wa.me/" +
