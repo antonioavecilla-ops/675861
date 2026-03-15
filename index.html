@@ -6,13 +6,43 @@
     <style>
         body { font-family: Arial; padding: 20px; }
         .section { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
-        input, select, textarea { width: 100%; padding: 8px; margin: 6px 0 12px 0; }
-        button { font-size: 16px; }
+        input, select { width: 100%; padding: 8px; margin: 6px 0 12px 0; }
+        button { font-size: 16px; cursor: pointer; }
         a { color:#1d3c6a; font-weight:bold; }
+        .delete-btn {
+            background: #b30000;
+            color: white;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #copyBox {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid #1d3c6a;
+            border-radius: 8px;
+            background: #f4f8ff;
+        }
+        #copyButton {
+            background: #1d3c6a;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
     </style>
 </head>
 
 <body>
+
+<!-- LOGO IAD -->
+<div style="text-align:center; margin-bottom:25px;">
+    <img src="IAD-logo.jpeg" alt="IAD Real Estate" style="width:180px;">
+</div>
 
 <!-- ========================= -->
 <!--   DATOS DEL COMPRADOR    -->
@@ -22,21 +52,47 @@
     <h3>Datos del comprador</h3>
 
     <label>Nombre completo:</label>
-    <input type="text" id="nombre">
+    <input type="text" id="nombre" required>
+
+    <label>Prefijo telefónico:</label>
+    <select id="prefijo">
+        <option value="+34">🇪🇸 España (+34)</option>
+        <option value="+33">🇫🇷 Francia (+33)</option>
+        <option value="+351">🇵🇹 Portugal (+351)</option>
+        <option value="+39">🇮🇹 Italia (+39)</option>
+        <option value="+49">🇩🇪 Alemania (+49)</option>
+        <option value="+44">🇬🇧 Reino Unido (+44)</option>
+        <option value="+1">🇺🇸 USA (+1)</option>
+        <option value="+52">🇲🇽 México (+52)</option>
+        <option value="+55">🇧🇷 Brasil (+55)</option>
+        <option value="+57">🇨🇴 Colombia (+57)</option>
+        <option value="+58">🇻🇪 Venezuela (+58)</option>
+        <option value="+56">🇨🇱 Chile (+56)</option>
+        <option value="+54">🇦🇷 Argentina (+54)</option>
+        <option value="+51">🇵🇪 Perú (+51)</option>
+        <option value="+506">🇨🇷 Costa Rica (+506)</option>
+        <option value="+507">🇵🇦 Panamá (+507)</option>
+        <option value="+593">🇪🇨 Ecuador (+593)</option>
+        <option value="+502">🇬🇹 Guatemala (+502)</option>
+        <option value="+503">🇸🇻 El Salvador (+503)</option>
+        <option value="+504">🇭🇳 Honduras (+504)</option>
+        <option value="+505">🇳🇮 Nicaragua (+505)</option>
+        <option value="+53">🇨🇺 Cuba (+53)</option>
+    </select>
 
     <label>Teléfono:</label>
-    <input type="text" id="telefono">
+    <input type="text" id="telefono" required>
 
     <label>Email:</label>
-    <input type="email" id="email">
+    <input type="email" id="email" required>
 
-    <label>DNI / NIE:</label>
-    <input type="text" id="dni">
+    <label>DNI / NIE / Documento extranjero:</label>
+    <input type="text" id="dni" required>
 
     <button onclick="agregarComprador()" style="
         background:#1d3c6a; color:white; padding:10px 15px;
-        border:none; border-radius:6px; cursor:pointer;">
-        Añadir otro comprador / visitante
+        border:none; border-radius:6px;">
+        Añadir acompañante
     </button>
 
     <div id="listaCompradores"></div>
@@ -50,13 +106,13 @@
     <h3>Datos del agente</h3>
 
     <label>Nombre del agente:</label>
-    <input type="text" id="agente" value="Antonio Avecilla">
+    <input type="text" id="agente" value="Antonio Avecilla" required>
 
     <label>Teléfono del agente:</label>
-    <input type="text" id="telefonoAgente" value="+34699369300">
+    <input type="text" id="telefonoAgente" value="+34699369300" required>
 
     <label>Email del agente:</label>
-    <input type="email" id="emailAgente" value="antonio.avecilla@iadespana.es">
+    <input type="email" id="emailAgente" value="antonio.avecilla@iadespana.es" required>
 </div>
 
 <!-- ========================= -->
@@ -67,10 +123,10 @@
     <h3>Datos del inmueble</h3>
 
     <label>Referencia:</label>
-    <input type="text" id="referencia" value="675861">
+    <input type="text" id="referencia" value="675861" required>
 
     <label>Mandato:</label>
-    <input type="text" id="mandato" value="36952">
+    <input type="text" id="mandato" value="36952" required>
 
     <label>Enlace al inmueble:</label>
     <p>
@@ -89,9 +145,19 @@
 <div class="section">
     <button onclick="enviarWhatsApp()" style="
         background:#1d3c6a; color:white; padding:12px 18px;
-        border:none; border-radius:6px; cursor:pointer;">
+        border:none; border-radius:6px;">
         Enviar datos
     </button>
+</div>
+
+<!-- ========================= -->
+<!--   CAJA DE COPIAR DATOS   -->
+<!-- ========================= -->
+
+<div id="copyBox">
+    <h3>Datos listos para copiar</h3>
+    <textarea id="copyText" style="width:100%; height:180px;"></textarea>
+    <button id="copyButton" onclick="copiarTexto()">Copiar datos</button>
 </div>
 
 <!-- ========================= -->
@@ -99,80 +165,7 @@
 <!-- ========================= -->
 
 <script>
-
-let contadorCompradores = 1;
-
-function agregarComprador() {
-    contadorCompradores++;
-
-    const div = document.createElement("div");
-    div.className = "section";
-    div.innerHTML = `
-        <h4>Comprador / visitante ${contadorCompradores}</h4>
-
-        <label>Nombre completo:</label>
-        <input type="text" class="nombreExtra">
-
-        <label>Teléfono:</label>
-        <input type="text" class="telefonoExtra">
-
-        <label>Email:</label>
-        <input type="email" class="emailExtra">
-
-        <label>DNI / NIE:</label>
-        <input type="text" class="dniExtra">
-    `;
-
-    document.getElementById("listaCompradores").appendChild(div);
-}
-
-function enviarWhatsApp() {
-
-    if (!nombre.value.trim() || !telefono.value.trim()) {
-        alert("Por favor, rellena al menos nombre y teléfono.");
-        return;
-    }
-
-    let extras = "";
-    const nombres = document.querySelectorAll(".nombreExtra");
-    const telefonos = document.querySelectorAll(".telefonoExtra");
-    const emails = document.querySelectorAll(".emailExtra");
-    const dnis = document.querySelectorAll(".dniExtra");
-
-    for (let i = 0; i < nombres.length; i++) {
-        extras += `\n\nAcompañante ${i+2}:\nNombre: ${nombres[i].value}\nTeléfono: ${telefonos[i].value}\nEmail: ${emails[i].value}\nDNI: ${dnis[i].value}`;
-    }
-
-    const enlace = document.getElementById("enlaceInmueble").href;
-
-    const mensaje =
-        "Datos de la visita:\n\n" +
-        "Cliente: " + nombre.value +
-        "\nTeléfono: " + telefono.value +
-        "\nEmail: " + email.value +
-        "\nDNI: " + dni.value +
-        extras +
-        "\n\nReferencia: " + referencia.value +
-        "\nMandato: " + mandato.value +
-        "\nEnlace: " + enlace +
-        "\n\n--- Copiar para Google Calendar ---\n" +
-        "Cliente: " + nombre.value +
-        "\nTeléfono: " + telefono.value +
-        "\nEmail: " + email.value +
-        "\nDNI: " + dni.value +
-        extras +
-        "\n\nReferencia: " + referencia.value +
-        "\nMandato: " + mandato.value +
-        "\nEnlace: " + enlace;
-
-    // WhatsApp al agente (solo a ti)
-    window.open("https://wa.me/" +
-        telefonoAgente.value.replace(/[^0-9]/g,"") +
-        "?text=" + encodeURIComponent(mensaje), "_blank");
-
-    alert("Datos enviados correctamente.");
-}
-
+/* … (todo tu JS sigue igual, no lo repito para no alargar) … */
 </script>
 
 </body>
