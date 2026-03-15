@@ -1,6 +1,101 @@
-/* ============================================================
-   MOSTRAR SELECTOR DE CITA SOLO CUANDO EL FORMULARIO ESTÁ LLENO
-   ============================================================ */
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario + Cita</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0 12px 0;
+        }
+        button {
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ========================= -->
+<!--   FORMULARIO PRINCIPAL   -->
+<!-- ========================= -->
+
+<div class="section">
+    <h3>Datos del comprador principal</h3>
+
+    <label>Nombre:</label>
+    <input type="text" id="nombre">
+
+    <label>Teléfono:</label>
+    <input type="text" id="telefono">
+
+    <label>Referencia del inmueble:</label>
+    <input type="text" id="referencia">
+
+    <label>Dirección del inmueble:</label>
+    <input type="text" id="direccion">
+
+    <button id="btnIrACita" onclick="mostrarSelectorCita()" style="
+        margin-top:20px;
+        background:#1d3c6a;
+        color:white;
+        padding:12px 18px;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+    ">
+        Continuar para fijar cita
+    </button>
+</div>
+
+<!-- ========================= -->
+<!--     BLOQUE DE LA CITA    -->
+<!-- ========================= -->
+
+<div id="bloqueCita" class="section" style="display:none;">
+    <h3>Cita para la visita</h3>
+
+    <label for="citaElegida">Selecciona hora de visita:</label>
+    <select id="citaElegida" onchange="onCitaSeleccionada()">
+        <option value="">-- Elige una hora --</option>
+        <option value="Hoy a las 10:00">Hoy a las 10:00</option>
+        <option value="Hoy a las 11:30">Hoy a las 11:30</option>
+        <option value="Hoy a las 13:00">Hoy a las 13:00</option>
+        <option value="Hoy a las 16:30">Hoy a las 16:30</option>
+        <option value="Hoy a las 18:00">Hoy a las 18:00</option>
+    </select>
+
+    <button id="confirmarBtn" style="
+        display:none;
+        margin-top:20px;
+        background:#1d3c6a;
+        color:white;
+        padding:12px 18px;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+    ">
+        Confirmar visita
+    </button>
+</div>
+
+<!-- ========================= -->
+<!--         JAVASCRIPT       -->
+<!-- ========================= -->
+
+<script>
+
 function mostrarSelectorCita() {
     const nombre = document.getElementById("nombre").value.trim();
     const telefono = document.getElementById("telefono").value.trim();
@@ -16,9 +111,6 @@ function mostrarSelectorCita() {
     window.scrollTo(0, document.body.scrollHeight);
 }
 
-/* ============================================================
-   1) CUANDO EL CLIENTE ELIGE UNA HORA → ABRIR GOOGLE CALENDAR
-   ============================================================ */
 function onCitaSeleccionada() {
     const select = document.getElementById("citaElegida");
     const confirmarBtn = document.getElementById("confirmarBtn");
@@ -28,14 +120,12 @@ function onCitaSeleccionada() {
         return;
     }
 
-    // Fecha de hoy en formato YYYYMMDD
     const hoy = new Date();
     const yyyy = hoy.getFullYear();
     const mm = String(hoy.getMonth() + 1).padStart(2, "0");
     const dd = String(hoy.getDate()).padStart(2, "0");
     const fecha = `${yyyy}${mm}${dd}`;
 
-    // Horarios disponibles
     const horas = {
         "Hoy a las 10:00": ["100000", "110000"],
         "Hoy a las 11:30": ["113000", "123000"],
@@ -65,9 +155,6 @@ function onCitaSeleccionada() {
     confirmarBtn.onclick = () => confirmarVisita();
 }
 
-/* ============================================================
-   2) CONFIRMAR VISITA → WHATSAPP + EMAIL
-   ============================================================ */
 function confirmarVisita() {
     const nombre = document.getElementById("nombre").value;
     const telefono = document.getElementById("telefono").value;
@@ -76,21 +163,18 @@ function confirmarVisita() {
 
     const mensaje = `Ya has fijado la cita para la visita del inmueble ${referencia} (${cita}). El agente contactará con usted para confirmar o modificar la misma.`;
 
-    // WhatsApp comprador
     if (telefono) {
         const waCliente = `https://wa.me/${telefono.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(mensaje)}`;
         window.open(waCliente, "_blank");
     }
 
-    // WhatsApp agente
-    const telefonoAgente = "34600000000"; // <-- CAMBIA ESTO
+    const telefonoAgente = "34600000000"; 
     const waAgente = `https://wa.me/${telefonoAgente}?text=${encodeURIComponent(
         `Cliente: ${nombre}\nTeléfono: ${telefono}\nInmueble: ${referencia}\nCita: ${cita}\n\n${mensaje}`
     )}`;
     window.open(waAgente, "_blank");
 
-    // Email agente
-    const emailAgente = "tuemail@ejemplo.com"; // <-- CAMBIA ESTO
+    const emailAgente = "tuemail@ejemplo.com";
     const asunto = encodeURIComponent(`Cita fijada – Inmueble ${referencia}`);
     const cuerpo = encodeURIComponent(
         `Cliente: ${nombre}\nTeléfono: ${telefono}\nInmueble: ${referencia}\nCita: ${cita}\n\n${mensaje}`
@@ -100,3 +184,8 @@ function confirmarVisita() {
     alert("Cita registrada. El agente contactará para confirmar o modificar la misma.");
     document.getElementById("confirmarBtn").style.display = "none";
 }
+
+</script>
+
+</body>
+</html>
