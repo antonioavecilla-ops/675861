@@ -1,281 +1,122 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Parte de Visita - Inmueble 675861</title>
-
-<style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; }
-    .wrapper { max-width: 900px; margin: 0 auto; }
-    header { display: flex; align-items: center; margin-bottom: 20px; }
-    header img { height: 60px; margin-right: 15px; }
-    header h1 { color: #1d3c6a; margin: 0; font-size: 24px; }
-    h2 { color: #1d3c6a; margin-top: 30px; }
-    .section { background: white; border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 10px; }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #aaa; }
-    button { padding: 12px 18px; background: #1d3c6a; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-    button:hover { background: #142845; }
-    small { color: #666; }
-
-    .dni-warning {
-        color: #b36b00;
-        font-size: 14px;
-        margin-top: 5px;
-        display: none;
-    }
-    .dni-error {
-        color: #c00000;
-        font-size: 14px;
-        margin-top: 5px;
-        display: none;
-    }
-</style>
-
-<script>
-// Validación de DNI/NIE
-function validarDNI(valor) {
-    valor = valor.toUpperCase();
-
-    // NIE
-    if (/^[XYZ]\d{7}[A-Z]$/.test(valor)) {
-        const mapa = { X: 0, Y: 1, Z: 2 };
-        const numero = valor.replace(/[XYZ]/, letra => mapa[letra]);
-        const letra = "TRWAGMYFPDXBNJZSQVHLCKE"[parseInt(numero, 10) % 23];
-        return letra === valor[8];
-    }
-
-    // DNI
-    if (/^\d{8}[A-Z]$/.test(valor)) {
-        const numero = valor.substring(0, 8);
-        const letra = "TRWAGMYFPDXBNJZSQVHLCKE"[numero % 23];
-        return letra === valor[8];
-    }
-
-    return false;
-}
-
-// Detectar cambios en todos los campos DNI
-document.addEventListener("input", function(e) {
-    if (e.target.classList.contains("compradorDni")) {
-        const dni = e.target.value.trim().toUpperCase();
-
-        // Crear mensaje si no existe
-        let msg = e.target.nextElementSibling;
-        if (!msg || (!msg.classList.contains("dni-warning") && !msg.classList.contains("dni-error"))) {
-            msg = document.createElement("div");
-            msg.classList.add("dni-warning");
-            e.target.insertAdjacentElement("afterend", msg);
-        }
-
-        // Si parece DNI/NIE español
-        const esDniONie = /^[0-9XYZ]/.test(dni);
-
-        if (esDniONie) {
-            if (dni.length >= 9 && !validarDNI(dni)) {
-                e.target.style.border = "2px solid red";
-                msg.className = "dni-error";
-                msg.textContent = "❗ DNI/NIE incorrecto. Revise el número.";
-                msg.style.display = "block";
-            } else {
-                e.target.style.border = "1px solid #aaa";
-                msg.style.display = "none";
-            }
-        } else {
-            // Documento extranjero
-            e.target.style.border = "2px solid orange";
-            msg.className = "dni-warning";
-            msg.innerHTML = 
-                "⚠ Documento no español detectado. Por favor, verifique la autenticidad del número.<br>" +
-                "⚠ Non‑Spanish ID detected. Please verify the authenticity of the document.";
-            msg.style.display = "block";
-        }
-    }
-});
-
-// Construir el texto del parte
-function construirResumen() {
-    const compradores = document.querySelectorAll(".compradorNombre");
-    let resumen = "Resumen del Parte de Visita:%0A%0A";
-
-    compradores.forEach((c, i) => {
-        resumen += `Comprador ${i+1}:%0A`;
-        resumen += `Nombre: ${c.value}%0A`;
-        resumen += `DNI: ${document.querySelectorAll('.compradorDni')[i].value}%0A`;
-
-        // Solo el comprador principal tiene teléfono y email
-        if (i === 0) {
-            resumen += `Teléfono: ${document.querySelector('.compradorTelefono').value}%0A`;
-            resumen += `Email: ${document.querySelector('.compradorEmail').value}%0A`;
-        }
-
-        resumen += `%0A`;
-    });
-
-    const ref = document.getElementById("referencia").value;
-    const mandato = document.getElementById("mandato").value;
-    const cita = document.getElementById("citaElegida").value;
-    const enlace = document.getElementById("enlaceInmueble").href;
-
-    resumen += `Referencia del inmueble: ${ref}%0A`;
-    resumen += `Número de mandato: ${mandato}%0A`;
-    resumen += `Enlace del inmueble: ${enlace}%0A`;
-    resumen += `Cita elegida: ${cita}%0A%0A`;
-    resumen += `Agente: Antonio Avecilla (IAD España)%0A`;
-    resumen += `Teléfono: +34 699 369 300%0A`;
-    resumen += `Email: Antonio.avecilla@iadespana.es%0A`;
-
-    return resumen;
-}
-
-// Enviar WhatsApp al comprador y al agente
-function enviarWhatsApps() {
-    const telefonoCliente = document.querySelector(".compradorTelefono").value.trim();
-    if (!telefonoCliente) {
-        alert("Falta el teléfono del comprador.");
-        return;
-    }
-    const resumen = construirResumen();
-    window.open(`https://wa.me/${telefonoCliente}?text=${resumen}`, "_blank");
-    window.open(`https://wa.me/34699369300?text=${resumen}`, "_blank");
-}
-
-// Enviar también por email al agente
-function enviarEmailAgente() {
-    const resumen = construirResumen().replace(/%0A/g, '\n');
-    const asunto = encodeURIComponent("Parte de visita");
-    const cuerpo = encodeURIComponent(resumen);
-    window.open(`mailto:Antonio.avecilla@iadespana.es?subject=${asunto}&body=${cuerpo}`, "_blank");
-}
-
-// Al seleccionar cita: dispara envíos
-function onCitaSeleccionada() {
-    const select = document.getElementById("citaElegida");
-    if (select.value) {
-        enviarWhatsApps();
-        enviarEmailAgente();
-    }
-}
-
-// Añadir compradores adicionales (solo nombre + DNI)
-function addComprador() {
-    const container = document.getElementById("compradoresContainer");
-    const nuevo = document.createElement("div");
-    nuevo.classList.add("section");
-    nuevo.innerHTML = `
-        <h3>Comprador adicional</h3>
-
-        <label>Nombre y apellidos:</label>
-        <input type="text" class="compradorNombre">
-
-        <label>DNI/NIE:</label>
-        <input type="text" class="compradorDni">
-    `;
-    container.appendChild(nuevo);
-}
-</script>
-
-</head>
-<body>
-<div class="wrapper">
-
-<!-- AVISO IMPORTANTE -->
-<div style="
-    background: #ffefc5;
-    border: 1px solid #e0b44c;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 16px;
-    color: #5a4500;
-">
-    <strong>¡Recuerde!</strong> Para organizar la visita necesitamos:
-    <br><br>
-    • Nombre completo, DNI, teléfono y email del comprador principal.<br>
-    • Nombre completo y DNI del resto de compradores o personas mayores de edad que realicen la visita.
-</div>
-
-<header>
-    <img src="https://via.placeholder.com/150x60?text=LOGO" alt="Logo IAD">
-    <h1>Parte de visita - Antonio Avecilla</h1>
-</header>
-
-<h2>Datos del comprador</h2>
-
-<div id="compradoresContainer">
-    <div class="section">
-        <h3>Comprador principal</h3>
-
-        <label>Nombre y apellidos:</label>
-        <input type="text" class="compradorNombre">
-
-        <label>DNI/NIE:</label>
-        <input type="text" class="compradorDni">
-
-        <label>Teléfono:</label>
-        <input type="text" class="compradorTelefono">
-
-        <label>Email:</label>
-        <input type="email" class="compradorEmail">
-    </div>
-</div>
-
-<button onclick="addComprador()">Añadir otro comprador</button>
-
-<h2>Datos del agente</h2>
+<!-- ========================= -->
+<!--   CITA PARA LA VISITA    -->
+<!-- ========================= -->
 
 <div class="section">
-    <label>Nombre:</label>
-    <input type="text" value="Antonio Avecilla" readonly>
+    <h3>Cita para la visita</h3>
 
-    <label>Agencia:</label>
-    <input type="text" value="Iad España" readonly>
-
-    <label>Teléfono:</label>
-    <input type="text" value="+34 699 369 300" readonly>
-
-    <label>Email:</label>
-    <input type="email" value="Antonio.avecilla@iadespana.es" readonly>
-</div>
-
-<h2>Datos del inmueble</h2>
-
-<div class="section">
-    <label>Referencia del inmueble:</label>
-    <input type="text" id="referencia" value="675861" readonly>
-
-    <label>Número de mandato:</label>
-    <input type="text" id="mandato" value="36952" readonly>
-
-    <label>Enlace del inmueble:</label>
-    <a id="enlaceInmueble"
-       href="https://www.iadespana.es/anuncio/casa-venta-5-habitaciones-chiclana-de-la-frontera-693m2/r675861"
-       target="_blank"
-       style="color:#1d3c6a; font-weight:bold;">
-       Ver ficha del inmueble
-    </a>
-</div>
-
-<h2>Reserva de cita</h2>
-
-<div class="section">
-    <p><strong>1.</strong> Abrir calendario y elegir fecha y hora:</p>
-
-    <button onclick="window.open('https://calendar.app.google/2w5XFHevpDNNiiWYA', '_blank')">
-        Abrir calendario de reservas
-    </button>
-
-    <p style="margin-top:20px;"><strong>2.</strong> Seleccionar aquí la cita acordada:</p>
+    <label for="citaElegida">Selecciona hora de visita:</label>
     <select id="citaElegida" onchange="onCitaSeleccionada()">
-        <option value="">-- Selecciona una cita --</option>
+        <option value="">-- Elige una hora --</option>
         <option value="Hoy a las 10:00">Hoy a las 10:00</option>
         <option value="Hoy a las 11:30">Hoy a las 11:30</option>
         <option value="Hoy a las 13:00">Hoy a las 13:00</option>
         <option value="Hoy a las 16:30">Hoy a las 16:30</option>
         <option value="Hoy a las 18:00">Hoy a las 18:00</option>
     </select>
+
+    <button id="confirmarBtn" style="
+        display:none;
+        margin-top:20px;
+        background:#1d3c6a;
+        color:white;
+        padding:12px 18px;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+    ">
+        Confirmar visita
+    </button>
 </div>
 
-</div>
-</body>
-</html>
+<script>
+/* ============================================================
+   1) CUANDO EL CLIENTE ELIGE UNA HORA → ABRIR GOOGLE CALENDAR
+   ============================================================ */
+function onCitaSeleccionada() {
+    const select = document.getElementById("citaElegida");
+    const confirmarBtn = document.getElementById("confirmarBtn");
+
+    if (!select.value) {
+        confirmarBtn.style.display = "none";
+        return;
+    }
+
+    // Fecha de hoy en formato YYYYMMDD
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoy.getDate()).padStart(2, "0");
+    const fecha = `${yyyy}${mm}${dd}`;
+
+    // Horarios disponibles
+    const horas = {
+        "Hoy a las 10:00": ["100000", "110000"],
+        "Hoy a las 11:30": ["113000", "123000"],
+        "Hoy a las 13:00": ["130000", "140000"],
+        "Hoy a las 16:30": ["163000", "173000"],
+        "Hoy a las 18:00": ["180000", "190000"]
+    };
+
+    const [inicio, fin] = horas[select.value];
+
+    const referencia = document.getElementById("referencia")?.value || "";
+    const direccion = document.getElementById("direccion")?.value || "Chiclana de la Frontera";
+
+    const titulo = encodeURIComponent(`Visita inmueble ${referencia}`);
+    const detalles = encodeURIComponent("Visita con cliente");
+    const loc = encodeURIComponent(direccion);
+
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+        `&text=${titulo}` +
+        `&dates=${fecha}T${inicio}/${fecha}T${fin}` +
+        `&details=${detalles}` +
+        `&location=${loc}`;
+
+    // Abrir Google Calendar
+    window.open(url, "_blank");
+
+    // Mostrar botón confirmar
+    confirmarBtn.style.display = "inline-block";
+
+    confirmarBtn.onclick = () => {
+        confirmarVisita();
+    };
+}
+
+/* ============================================================
+   2) CONFIRMAR VISITA → WHATSAPP + EMAIL
+   ============================================================ */
+function confirmarVisita() {
+    const nombre = document.getElementById("nombre")?.value || "";
+    const telefono = document.getElementById("telefono")?.value || "";
+    const referencia = document.getElementById("referencia")?.value || "";
+    const cita = document.getElementById("citaElegida")?.value || "";
+
+    const mensaje = `Ya has fijado la cita para la visita del inmueble ${referencia} (${cita}). El agente contactará con usted para confirmar o modificar la misma.`;
+
+    /* --- WhatsApp al comprador --- */
+    if (telefono) {
+        const waCliente = `https://wa.me/${telefono.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(mensaje)}`;
+        window.open(waCliente, "_blank");
+    }
+
+    /* --- WhatsApp al agente (CAMBIAR NÚMERO) --- */
+    const telefonoAgente = "34600000000"; // <-- CAMBIA ESTO
+    const waAgente = `https://wa.me/${telefonoAgente}?text=${encodeURIComponent(
+        `Cliente: ${nombre}\nTeléfono: ${telefono}\nInmueble: ${referencia}\nCita: ${cita}\n\n${mensaje}`
+    )}`;
+    window.open(waAgente, "_blank");
+
+    /* --- Email al agente (CAMBIAR EMAIL) --- */
+    const emailAgente = "tuemail@ejemplo.com"; // <-- CAMBIA ESTO
+    const asunto = encodeURIComponent(`Cita fijada – Inmueble ${referencia}`);
+    const cuerpo = encodeURIComponent(
+        `Cliente: ${nombre}\nTeléfono: ${telefono}\nInmueble: ${referencia}\nCita: ${cita}\n\n${mensaje}`
+    );
+    window.location.href = `mailto:${emailAgente}?subject=${asunto}&body=${cuerpo}`;
+
+    alert("Cita registrada. El agente contactará para confirmar o modificar la misma.");
+    document.getElementById("confirmarBtn").style.display = "none";
+}
+</script>
