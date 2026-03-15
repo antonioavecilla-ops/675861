@@ -39,9 +39,9 @@
 
 <body>
 
-<!-- LOGO IAD -->
-<div style="text-align:center; margin-bottom:25px;">
-    <img src="IAD-logo.jpeg" alt="IAD Real Estate" style="width:180px;">
+<!-- LOGO NUEVO AJUSTADO -->
+<div style="text-align:center; margin:10px 0 25px 0;">
+    <img src="nuevo-logo.jpeg" alt="IAD Real Estate" style="width:110px; opacity:0.95;">
 </div>
 
 <!-- ========================= -->
@@ -165,7 +165,122 @@
 <!-- ========================= -->
 
 <script>
-/* … (todo tu JS sigue igual, no lo repito para no alargar) … */
+
+let contadorCompradores = 0;
+
+function agregarComprador() {
+    contadorCompradores++;
+
+    const div = document.createElement("div");
+    div.className = "section";
+    div.id = "acompanante_" + contadorCompradores;
+
+    div.innerHTML = `
+        <h4>Acompañante ${contadorCompradores}</h4>
+
+        <label>Nombre completo:</label>
+        <input type="text" class="nombreExtra" required>
+
+        <label>DNI / NIE / Documento extranjero:</label>
+        <input type="text" class="dniExtra" required>
+
+        <button class="delete-btn" onclick="eliminarAcompanante('${div.id}')">
+            Eliminar acompañante
+        </button>
+    `;
+
+    document.getElementById("listaCompradores").appendChild(div);
+}
+
+function eliminarAcompanante(id) {
+    document.getElementById(id).remove();
+}
+
+function esDNIEspanol(dni) {
+    dni = dni.toUpperCase().trim();
+    dni = dni.replace(/^[X]/, "0").replace(/^[Y]/, "1").replace(/^[Z]/, "2");
+    const regex = /^[0-9]{8}[A-Z]$/;
+    if (!regex.test(dni)) return false;
+    const numero = dni.substring(0, 8);
+    const letra = dni.substring(8, 9);
+    const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+    return letra === letras[numero % 23];
+}
+
+function validarEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email.trim());
+}
+
+function copiarTexto() {
+    const textarea = document.getElementById("copyText");
+    textarea.select();
+    document.execCommand("copy");
+    alert("Datos copiados");
+}
+
+function enviarWhatsApp() {
+
+    if (!nombre.value.trim() || !telefono.value.trim() || !email.value.trim() || !dni.value.trim()) {
+        alert("Todos los campos del comprador son obligatorios.");
+        return;
+    }
+
+    if (!validarEmail(email.value)) {
+        alert("El email del comprador no es válido.");
+        return;
+    }
+
+    let notaDocumento = "";
+    if (!esDNIEspanol(dni.value)) {
+        notaDocumento = " (Documento extranjero)";
+    }
+
+    const telefonoCompleto = prefijo.value + " " + telefono.value.trim();
+
+    let extras = "";
+    const nombres = document.querySelectorAll(".nombreExtra");
+    const dnis = document.querySelectorAll(".dniExtra");
+
+    for (let i = 0; i < nombres.length; i++) {
+
+        if (!nombres[i].value.trim() || !dnis[i].value.trim()) {
+            alert("Todos los campos de los acompañantes son obligatorios.");
+            return;
+        }
+
+        let notaAcomp = "";
+        if (!esDNIEspanol(dnis[i].value)) {
+            notaAcomp = " (Documento extranjero)";
+        }
+
+        extras += `\n\nAcompañante ${i+1}:\nNombre: ${nombres[i].value}\nDNI: ${dnis[i].value}${notaAcomp}`;
+    }
+
+    const enlace = document.getElementById("enlaceInmueble").href;
+
+    const mensaje =
+        "Datos del comprador:\n\n" +
+        "Nombre: " + nombre.value +
+        "\nTeléfono: " + telefonoCompleto +
+        "\nEmail: " + email.value +
+        "\nDNI: " + dni.value + notaDocumento +
+        extras +
+        "\n\nReferencia: " + referencia.value +
+        "\nMandato: " + mandato.value +
+        "\nEnlace al inmueble: " + enlace +
+        "\n\nEl agente contactará para fijar la cita.";
+
+    document.getElementById("copyBox").style.display = "block";
+    document.getElementById("copyText").value = mensaje;
+
+    window.open("https://wa.me/" +
+        telefonoAgente.value.replace(/[^0-9]/g,"") +
+        "?text=" + encodeURIComponent(mensaje), "_blank");
+
+    alert("Datos enviados correctamente.");
+}
+
 </script>
 
 </body>
