@@ -6,37 +6,97 @@
     <style>
         body { font-family: Arial; padding: 20px; }
         .section { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
-        input, select { width: 100%; padding: 8px; margin: 6px 0 12px 0; }
+        input, select, textarea { width: 100%; padding: 8px; margin: 6px 0 12px 0; }
         button { font-size: 16px; }
+        .subtitulo { font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 
 <body>
 
-<div class="section">
-    <h3>Datos del comprador principal</h3>
+<!-- ========================= -->
+<!--   DATOS DEL COMPRADOR    -->
+<!-- ========================= -->
 
-    <label>Nombre:</label>
+<div class="section">
+    <h3>Datos del comprador</h3>
+
+    <label>Nombre completo:</label>
     <input type="text" id="nombre">
 
     <label>Teléfono:</label>
     <input type="text" id="telefono">
 
-    <label>Referencia del inmueble:</label>
-    <input type="text" id="referencia">
+    <label>Email:</label>
+    <input type="email" id="email">
+
+    <label>DNI / NIE:</label>
+    <input type="text" id="dni">
+
+    <button onclick="agregarComprador()" style="
+        background:#1d3c6a; color:white; padding:10px 15px;
+        border:none; border-radius:6px; cursor:pointer;">
+        Añadir otro comprador / visitante
+    </button>
+
+    <div id="listaCompradores"></div>
+</div>
+
+<!-- ========================= -->
+<!--     DATOS DEL AGENTE     -->
+<!-- ========================= -->
+
+<div class="section">
+    <h3>Datos del agente</h3>
+
+    <label>Nombre del agente:</label>
+    <input type="text" id="agente" value="Antonio Avecilla">
+
+    <label>Teléfono del agente:</label>
+    <input type="text" id="telefonoAgente" value="34600000000">
+
+    <label>Email del agente:</label>
+    <input type="email" id="emailAgente" value="tuemail@ejemplo.com">
+</div>
+
+<!-- ========================= -->
+<!--   DATOS DEL INMUEBLE     -->
+<!-- ========================= -->
+
+<div class="section">
+    <h3>Datos del inmueble</h3>
+
+    <label>Referencia:</label>
+    <input type="text" id="referencia" value="REF-12345">
+
+    <label>Mandato:</label>
+    <input type="text" id="mandato" value="Mandato firmado">
+
+    <label>Enlace al inmueble:</label>
+    <input type="text" id="enlace" value="https://tupagina.com/inmueble/12345">
 
     <label>Dirección del inmueble:</label>
-    <input type="text" id="direccion">
+    <input type="text" id="direccion" value="Chiclana de la Frontera">
+</div>
 
+<!-- ========================= -->
+<!--   BOTÓN PARA LA CITA     -->
+<!-- ========================= -->
+
+<div class="section">
     <button onclick="mostrarSelectorCita()" style="
-        margin-top:20px; background:#1d3c6a; color:white;
-        padding:12px 18px; border:none; border-radius:6px; cursor:pointer;">
+        background:#1d3c6a; color:white; padding:12px 18px;
+        border:none; border-radius:6px; cursor:pointer;">
         Continuar para fijar cita
     </button>
 </div>
 
+<!-- ========================= -->
+<!--     BLOQUE DE LA CITA    -->
+<!-- ========================= -->
+
 <div id="bloqueCita" class="section" style="display:none;">
-    <h3>Cita para la visita</h3>
+    <h3>Fijar cita para la visita</h3>
 
     <label for="citaElegida">Selecciona hora de visita:</label>
     <select id="citaElegida" onchange="onCitaSeleccionada()">
@@ -55,15 +115,41 @@
     </button>
 </div>
 
-<script>
-function mostrarSelectorCita() {
-    const nombre = nombre.value.trim();
-    const telefono = telefono.value.trim();
-    const referencia = referencia.value.trim();
-    const direccion = direccion.value.trim();
+<!-- ========================= -->
+<!--         JAVASCRIPT       -->
+<!-- ========================= -->
 
-    if (!nombre || !telefono || !referencia || !direccion) {
-        alert("Por favor, completa todos los datos antes de fijar la cita.");
+<script>
+
+let contadorCompradores = 1;
+
+function agregarComprador() {
+    contadorCompradores++;
+
+    const div = document.createElement("div");
+    div.className = "section";
+    div.innerHTML = `
+        <h4>Comprador / visitante ${contadorCompradores}</h4>
+
+        <label>Nombre completo:</label>
+        <input type="text" class="nombreExtra">
+
+        <label>Teléfono:</label>
+        <input type="text" class="telefonoExtra">
+
+        <label>Email:</label>
+        <input type="email" class="emailExtra">
+
+        <label>DNI / NIE:</label>
+        <input type="text" class="dniExtra">
+    `;
+
+    document.getElementById("listaCompradores").appendChild(div);
+}
+
+function mostrarSelectorCita() {
+    if (!nombre.value.trim() || !telefono.value.trim() || !referencia.value.trim()) {
+        alert("Por favor, completa los datos obligatorios antes de fijar la cita.");
         return;
     }
 
@@ -107,40 +193,44 @@ function onCitaSeleccionada() {
 
 function confirmarVisita() {
     const mensaje =
-        "Ya has fijado la cita para la visita del inmueble " +
-        referencia.value + " (" + citaElegida.value +
-        "). El agente contactará con usted para confirmar o modificar la misma.";
+        "Cita fijada para visitar el inmueble " +
+        referencia.value + " (" + citaElegida.value + ").";
 
-    // WhatsApp cliente
+    // WhatsApp cliente principal
     window.open("https://wa.me/" +
         telefono.value.replace(/[^0-9]/g,"") +
         "?text=" + encodeURIComponent(mensaje), "_blank");
 
     // WhatsApp agente
-    window.open("https://wa.me/34600000000?text=" +
+    window.open("https://wa.me/" + telefonoAgente.value + "?text=" +
         encodeURIComponent(
             "Cliente: " + nombre.value +
             "\nTeléfono: " + telefono.value +
             "\nInmueble: " + referencia.value +
             "\nCita: " + citaElegida.value +
+            "\nMandato: " + mandato.value +
+            "\nEnlace: " + enlace.value +
             "\n\n" + mensaje
         ), "_blank");
 
     // Email agente
     window.location.href =
-        "mailto:tuemail@ejemplo.com?subject=" +
-        encodeURIComponent("Cita fijada – Inmueble " + referencia.value) +
+        "mailto:" + emailAgente.value +
+        "?subject=" + encodeURIComponent("Cita fijada – " + referencia.value) +
         "&body=" + encodeURIComponent(
             "Cliente: " + nombre.value +
             "\nTeléfono: " + telefono.value +
             "\nInmueble: " + referencia.value +
             "\nCita: " + citaElegida.value +
+            "\nMandato: " + mandato.value +
+            "\nEnlace: " + enlace.value +
             "\n\n" + mensaje
         );
 
-    alert("Cita registrada. El agente contactará para confirmar o modificar la misma.");
+    alert("Cita registrada correctamente.");
     confirmarBtn.style.display = "none";
 }
+
 </script>
 
 </body>
