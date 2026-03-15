@@ -8,7 +8,6 @@
         .section { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
         input, select, textarea { width: 100%; padding: 8px; margin: 6px 0 12px 0; }
         button { font-size: 16px; }
-        .subtitulo { font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 
@@ -52,4 +51,183 @@
     <label>Nombre del agente:</label>
     <input type="text" id="agente" value="Antonio Avecilla">
 
-    <label>Teléfono del agente
+    <label>Teléfono del agente:</label>
+    <input type="text" id="telefonoAgente" value="+34699369300">
+
+    <label>Email del agente:</label>
+    <input type="email" id="emailAgente" value="antonio.avecilla@iadespana.es">
+</div>
+
+<!-- ========================= -->
+<!--   DATOS DEL INMUEBLE     -->
+<!-- ========================= -->
+
+<div class="section">
+    <h3>Datos del inmueble</h3>
+
+    <label>Referencia:</label>
+    <input type="text" id="referencia" value="675861">
+
+    <label>Mandato:</label>
+    <input type="text" id="mandato" value="36952">
+
+    <label>Enlace al inmueble:</label>
+    <input type="text" id="enlace" value="https://www.iadespana.es/anuncio/casa-venta-5-habitaciones-chiclana-de-la-frontera-693m2/r675861">
+</div>
+
+<!-- ========================= -->
+<!--   BOTÓN PARA LA CITA     -->
+<!-- ========================= -->
+
+<div class="section">
+    <button onclick="mostrarSelectorCita()" style="
+        background:#1d3c6a; color:white; padding:12px 18px;
+        border:none; border-radius:6px; cursor:pointer;">
+        Continuar para fijar cita
+    </button>
+</div>
+
+<!-- ========================= -->
+<!--     BLOQUE DE LA CITA    -->
+<!-- ========================= -->
+
+<div id="bloqueCita" class="section" style="display:none;">
+    <h3>Fijar cita para la visita</h3>
+
+    <label for="citaElegida">Selecciona hora de visita:</label>
+    <select id="citaElegida" onchange="onCitaSeleccionada()">
+        <option value="">-- Elige una hora --</option>
+        <option value="Hoy a las 10:00">Hoy a las 10:00</option>
+        <option value="Hoy a las 11:30">Hoy a las 11:30</option>
+        <option value="Hoy a las 13:00">Hoy a las 13:00</option>
+        <option value="Hoy a las 16:30">Hoy a las 16:30</option>
+        <option value="Hoy a las 18:00">Hoy a las 18:00</option>
+    </select>
+
+    <button id="confirmarBtn" style="
+        display:none; margin-top:20px; background:#1d3c6a; color:white;
+        padding:12px 18px; border:none; border-radius:6px; cursor:pointer;">
+        Confirmar visita
+    </button>
+</div>
+
+<!-- ========================= -->
+<!--         JAVASCRIPT       -->
+<!-- ========================= -->
+
+<script>
+
+let contadorCompradores = 1;
+
+function agregarComprador() {
+    contadorCompradores++;
+
+    const div = document.createElement("div");
+    div.className = "section";
+    div.innerHTML = `
+        <h4>Comprador / visitante ${contadorCompradores}</h4>
+
+        <label>Nombre completo:</label>
+        <input type="text" class="nombreExtra">
+
+        <label>Teléfono:</label>
+        <input type="text" class="telefonoExtra">
+
+        <label>Email:</label>
+        <input type="email" class="emailExtra">
+
+        <label>DNI / NIE:</label>
+        <input type="text" class="dniExtra">
+    `;
+
+    document.getElementById("listaCompradores").appendChild(div);
+}
+
+function mostrarSelectorCita() {
+    if (!nombre.value.trim() || !telefono.value.trim() || !referencia.value.trim()) {
+        alert("Por favor, completa los datos obligatorios antes de fijar la cita.");
+        return;
+    }
+
+    bloqueCita.style.display = "block";
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function onCitaSeleccionada() {
+    if (!citaElegida.value) {
+        confirmarBtn.style.display = "none";
+        return;
+    }
+
+    const hoy = new Date();
+    const fecha = hoy.getFullYear() +
+        String(hoy.getMonth()+1).padStart(2,"0") +
+        String(hoy.getDate()).padStart(2,"0");
+
+    const horas = {
+        "Hoy a las 10:00": ["100000","110000"],
+        "Hoy a las 11:30": ["113000","123000"],
+        "Hoy a las 13:00": ["130000","140000"],
+        "Hoy a las 16:30": ["163000","173000"],
+        "Hoy a las 18:00": ["180000","190000"]
+    };
+
+    const [inicio, fin] = horas[citaElegida.value];
+
+    const url =
+        "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+        "&text=" + encodeURIComponent("Visita inmueble " + referencia.value) +
+        "&dates=" + fecha + "T" + inicio + "/" + fecha + "T" + fin +
+        "&details=" + encodeURIComponent("Visita con cliente") +
+        "&location=" + encodeURIComponent(enlace.value);
+
+    window.open(url, "_blank");
+
+    confirmarBtn.style.display = "inline-block";
+    confirmarBtn.onclick = confirmarVisita;
+}
+
+function confirmarVisita() {
+    const mensaje =
+        "Cita fijada para visitar el inmueble " +
+        referencia.value + " (" + citaElegida.value + ").";
+
+    // WhatsApp cliente principal
+    window.open("https://wa.me/" +
+        telefono.value.replace(/[^0-9]/g,"") +
+        "?text=" + encodeURIComponent(mensaje), "_blank");
+
+    // WhatsApp agente
+    window.open("https://wa.me/" + telefonoAgente.value + "?text=" +
+        encodeURIComponent(
+            "Cliente: " + nombre.value +
+            "\nTeléfono: " + telefono.value +
+            "\nInmueble: " + referencia.value +
+            "\nCita: " + citaElegida.value +
+            "\nMandato: " + mandato.value +
+            "\nEnlace: " + enlace.value +
+            "\n\n" + mensaje
+        ), "_blank");
+
+    // Email agente
+    window.location.href =
+        "mailto:" + emailAgente.value +
+        "?subject=" + encodeURIComponent("Cita fijada – " + referencia.value) +
+        "&body=" + encodeURIComponent(
+            "Cliente: " + nombre.value +
+            "\nTeléfono: " + telefono.value +
+            "\nInmueble: " + referencia.value +
+            "\nCita: " + citaElegida.value +
+            "\nMandato: " + mandato.value +
+            "\nEnlace: " + enlace.value +
+            "\n\n" + mensaje
+        );
+
+    alert("Cita registrada correctamente.");
+    confirmarBtn.style.display = "none";
+}
+
+</script>
+
+</body>
+</html>
