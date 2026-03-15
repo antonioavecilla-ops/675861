@@ -83,25 +83,14 @@
 </div>
 
 <!-- ========================= -->
-<!--        CITA FIJADA       -->
-<!-- ========================= -->
-
-<div class="section">
-    <h3>Cita fijada</h3>
-
-    <label>Fecha y hora de la visita (la decides tú):</label>
-    <input type="text" id="cita" value="Lunes 18 a las 12:00">
-</div>
-
-<!-- ========================= -->
 <!--       BOTÓN ENVIAR       -->
 <!-- ========================= -->
 
 <div class="section">
-    <button onclick="enviarTodo()" style="
+    <button onclick="enviarWhatsApp()" style="
         background:#1d3c6a; color:white; padding:12px 18px;
         border:none; border-radius:6px; cursor:pointer;">
-        Enviar datos y cita
+        Enviar datos
     </button>
 </div>
 
@@ -137,7 +126,7 @@ function agregarComprador() {
     document.getElementById("listaCompradores").appendChild(div);
 }
 
-function enviarTodo() {
+function enviarWhatsApp() {
 
     if (!nombre.value.trim() || !telefono.value.trim()) {
         alert("Por favor, rellena al menos nombre y teléfono.");
@@ -166,23 +155,12 @@ function enviarTodo() {
         "\n\nReferencia: " + referencia.value +
         "\nMandato: " + mandato.value +
         "\nEnlace: " + enlace +
-        "\n\nCita fijada: " + cita.value;
+        "\n\nEl agente contactará para fijar la cita.";
 
-    // WhatsApp al cliente
-    window.open("https://wa.me/" +
-        telefono.value.replace(/[^0-9]/g,"") +
-        "?text=" + encodeURIComponent(mensaje), "_blank");
-
-    // WhatsApp al agente
+    // WhatsApp al agente (solo a ti)
     window.open("https://wa.me/" +
         telefonoAgente.value.replace(/[^0-9]/g,"") +
         "?text=" + encodeURIComponent(mensaje), "_blank");
-
-    // Email al agente
-    window.location.href =
-        "mailto:" + emailAgente.value +
-        "?subject=" + encodeURIComponent("Cita fijada – " + referencia.value) +
-        "&body=" + encodeURIComponent(mensaje);
 
     alert("Datos enviados correctamente.");
 }
