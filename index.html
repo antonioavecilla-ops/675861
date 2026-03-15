@@ -1,35 +1,21 @@
-<!-- ========================= -->
-<!--   CITA PARA LA VISITA    -->
-<!-- ========================= -->
+/* ============================================================
+   MOSTRAR SELECTOR DE CITA SOLO CUANDO EL FORMULARIO ESTÁ LLENO
+   ============================================================ */
+function mostrarSelectorCita() {
+    const nombre = document.getElementById("nombre").value.trim();
+    const telefono = document.getElementById("telefono").value.trim();
+    const referencia = document.getElementById("referencia").value.trim();
+    const direccion = document.getElementById("direccion").value.trim();
 
-<div class="section">
-    <h3>Cita para la visita</h3>
+    if (!nombre || !telefono || !referencia || !direccion) {
+        alert("Por favor, completa todos los datos antes de fijar la cita.");
+        return;
+    }
 
-    <label for="citaElegida">Selecciona hora de visita:</label>
-    <select id="citaElegida" onchange="onCitaSeleccionada()">
-        <option value="">-- Elige una hora --</option>
-        <option value="Hoy a las 10:00">Hoy a las 10:00</option>
-        <option value="Hoy a las 11:30">Hoy a las 11:30</option>
-        <option value="Hoy a las 13:00">Hoy a las 13:00</option>
-        <option value="Hoy a las 16:30">Hoy a las 16:30</option>
-        <option value="Hoy a las 18:00">Hoy a las 18:00</option>
-    </select>
+    document.getElementById("bloqueCita").style.display = "block";
+    window.scrollTo(0, document.body.scrollHeight);
+}
 
-    <button id="confirmarBtn" style="
-        display:none;
-        margin-top:20px;
-        background:#1d3c6a;
-        color:white;
-        padding:12px 18px;
-        border:none;
-        border-radius:6px;
-        cursor:pointer;
-    ">
-        Confirmar visita
-    </button>
-</div>
-
-<script>
 /* ============================================================
    1) CUANDO EL CLIENTE ELIGE UNA HORA → ABRIR GOOGLE CALENDAR
    ============================================================ */
@@ -60,8 +46,8 @@ function onCitaSeleccionada() {
 
     const [inicio, fin] = horas[select.value];
 
-    const referencia = document.getElementById("referencia")?.value || "";
-    const direccion = document.getElementById("direccion")?.value || "Chiclana de la Frontera";
+    const referencia = document.getElementById("referencia").value;
+    const direccion = document.getElementById("direccion").value;
 
     const titulo = encodeURIComponent(`Visita inmueble ${referencia}`);
     const detalles = encodeURIComponent("Visita con cliente");
@@ -73,42 +59,37 @@ function onCitaSeleccionada() {
         `&details=${detalles}` +
         `&location=${loc}`;
 
-    // Abrir Google Calendar
     window.open(url, "_blank");
 
-    // Mostrar botón confirmar
     confirmarBtn.style.display = "inline-block";
-
-    confirmarBtn.onclick = () => {
-        confirmarVisita();
-    };
+    confirmarBtn.onclick = () => confirmarVisita();
 }
 
 /* ============================================================
    2) CONFIRMAR VISITA → WHATSAPP + EMAIL
    ============================================================ */
 function confirmarVisita() {
-    const nombre = document.getElementById("nombre")?.value || "";
-    const telefono = document.getElementById("telefono")?.value || "";
-    const referencia = document.getElementById("referencia")?.value || "";
-    const cita = document.getElementById("citaElegida")?.value || "";
+    const nombre = document.getElementById("nombre").value;
+    const telefono = document.getElementById("telefono").value;
+    const referencia = document.getElementById("referencia").value;
+    const cita = document.getElementById("citaElegida").value;
 
     const mensaje = `Ya has fijado la cita para la visita del inmueble ${referencia} (${cita}). El agente contactará con usted para confirmar o modificar la misma.`;
 
-    /* --- WhatsApp al comprador --- */
+    // WhatsApp comprador
     if (telefono) {
         const waCliente = `https://wa.me/${telefono.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(mensaje)}`;
         window.open(waCliente, "_blank");
     }
 
-    /* --- WhatsApp al agente (CAMBIAR NÚMERO) --- */
+    // WhatsApp agente
     const telefonoAgente = "34600000000"; // <-- CAMBIA ESTO
     const waAgente = `https://wa.me/${telefonoAgente}?text=${encodeURIComponent(
         `Cliente: ${nombre}\nTeléfono: ${telefono}\nInmueble: ${referencia}\nCita: ${cita}\n\n${mensaje}`
     )}`;
     window.open(waAgente, "_blank");
 
-    /* --- Email al agente (CAMBIAR EMAIL) --- */
+    // Email agente
     const emailAgente = "tuemail@ejemplo.com"; // <-- CAMBIA ESTO
     const asunto = encodeURIComponent(`Cita fijada – Inmueble ${referencia}`);
     const cuerpo = encodeURIComponent(
@@ -119,4 +100,3 @@ function confirmarVisita() {
     alert("Cita registrada. El agente contactará para confirmar o modificar la misma.");
     document.getElementById("confirmarBtn").style.display = "none";
 }
-</script>
