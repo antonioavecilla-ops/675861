@@ -17,9 +17,82 @@
     button { padding: 12px 18px; background: #1d3c6a; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
     button:hover { background: #142845; }
     small { color: #666; }
+
+    .dni-warning {
+        color: #b36b00;
+        font-size: 14px;
+        margin-top: 5px;
+        display: none;
+    }
+    .dni-error {
+        color: #c00000;
+        font-size: 14px;
+        margin-top: 5px;
+        display: none;
+    }
 </style>
 
 <script>
+// Validación de DNI/NIE
+function validarDNI(valor) {
+    valor = valor.toUpperCase();
+
+    // NIE
+    if (/^[XYZ]\d{7}[A-Z]$/.test(valor)) {
+        const mapa = { X: 0, Y: 1, Z: 2 };
+        const numero = valor.replace(/[XYZ]/, letra => mapa[letra]);
+        const letra = "TRWAGMYFPDXBNJZSQVHLCKE"[parseInt(numero, 10) % 23];
+        return letra === valor[8];
+    }
+
+    // DNI
+    if (/^\d{8}[A-Z]$/.test(valor)) {
+        const numero = valor.substring(0, 8);
+        const letra = "TRWAGMYFPDXBNJZSQVHLCKE"[numero % 23];
+        return letra === valor[8];
+    }
+
+    return false;
+}
+
+// Detectar cambios en todos los campos DNI
+document.addEventListener("input", function(e) {
+    if (e.target.classList.contains("compradorDni")) {
+        const dni = e.target.value.trim().toUpperCase();
+
+        // Crear mensaje si no existe
+        let msg = e.target.nextElementSibling;
+        if (!msg || (!msg.classList.contains("dni-warning") && !msg.classList.contains("dni-error"))) {
+            msg = document.createElement("div");
+            msg.classList.add("dni-warning");
+            e.target.insertAdjacentElement("afterend", msg);
+        }
+
+        // Si parece DNI/NIE español
+        const esDniONie = /^[0-9XYZ]/.test(dni);
+
+        if (esDniONie) {
+            if (dni.length >= 9 && !validarDNI(dni)) {
+                e.target.style.border = "2px solid red";
+                msg.className = "dni-error";
+                msg.textContent = "❗ DNI/NIE incorrecto. Revise el número.";
+                msg.style.display = "block";
+            } else {
+                e.target.style.border = "1px solid #aaa";
+                msg.style.display = "none";
+            }
+        } else {
+            // Documento extranjero
+            e.target.style.border = "2px solid orange";
+            msg.className = "dni-warning";
+            msg.innerHTML = 
+                "⚠ Documento no español detectado. Por favor, verifique la autenticidad del número.<br>" +
+                "⚠ Non‑Spanish ID detected. Please verify the authenticity of the document.";
+            msg.style.display = "block";
+        }
+    }
+});
+
 // Construir el texto del parte
 function construirResumen() {
     const compradores = document.querySelectorAll(".compradorNombre");
@@ -29,8 +102,14 @@ function construirResumen() {
         resumen += `Comprador ${i+1}:%0A`;
         resumen += `Nombre: ${c.value}%0A`;
         resumen += `DNI: ${document.querySelectorAll('.compradorDni')[i].value}%0A`;
-        resumen += `Teléfono: ${document.querySelectorAll('.compradorTelefono')[i].value}%0A`;
-        resumen += `Email: ${document.querySelectorAll('.compradorEmail')[i].value}%0A%0A`;
+
+        // Solo el comprador principal tiene teléfono y email
+        if (i === 0) {
+            resumen += `Teléfono: ${document.querySelector('.compradorTelefono').value}%0A`;
+            resumen += `Email: ${document.querySelector('.compradorEmail').value}%0A`;
+        }
+
+        resumen += `%0A`;
     });
 
     const ref = document.getElementById("referencia").value;
@@ -78,24 +157,19 @@ function onCitaSeleccionada() {
     }
 }
 
-// Añadir compradores dinámicamente
+// Añadir compradores adicionales (solo nombre + DNI)
 function addComprador() {
     const container = document.getElementById("compradoresContainer");
     const nuevo = document.createElement("div");
     nuevo.classList.add("section");
     nuevo.innerHTML = `
         <h3>Comprador adicional</h3>
+
         <label>Nombre y apellidos:</label>
         <input type="text" class="compradorNombre">
 
         <label>DNI/NIE:</label>
         <input type="text" class="compradorDni">
-
-        <label>Teléfono:</label>
-        <input type="text" class="compradorTelefono">
-
-        <label>Email:</label>
-        <input type="email" class="compradorEmail">
     `;
     container.appendChild(nuevo);
 }
